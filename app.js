@@ -1,231 +1,278 @@
-// ---- Content model for the 4-week plan ----
+// Dopamine Plan Upgraded app.js
+// Local storage-based, offline-first habit & focus tracker with scheduling, timers, charts, badges, and push notifications
+
+// --- CONFIGURATION ---
 const PLAN = {
-  1: {
-    actionsDesc: "Identify drains, set baseline, add a daily low-stim ‘dopamine break’.",
-    actions: [
-      "Fixed wake-up + sunlight + water + 5–10 min movement",
-      "5-min dopamine audit (top 3 distractions)",
-      "One 15–20 min low-stim break (walk/stretch/breathing)",
-      "Journal reflection (focus high/low moments)"
-    ],
-    rules: [
-      "Social media in 2 fixed windows only",
-      "Replace one unhelpful habit with a neutral one"
-    ],
-    prompt: "When did I feel most focused today? Least focused?"
-  },
-  2: {
-    actionsDesc: "Replace random spikes with intentional ones; add time-boxing.",
-    actions: [
-      "2–4 time-boxed focus blocks (25–45 min + 5–10 min break)",
-      "Give yourself one small ‘treat’ after a meaningful task",
-      "10-min brain-boost (read, learn, puzzle)"
-    ],
-    rules: [
-      "No phone for first hour after waking",
-      "High-sugar snacks out of sight; healthy ones visible"
-    ],
-    prompt: "What’s one thing I’m proud I controlled today?"
-  },
-  3: {
-    actionsDesc: "Push sustained focus and recover faster.",
-    actions: [
-      "Morning: review top 3 priorities",
-      "One 60-min deep work block (single task, no interruptions)",
-      "Mid-day recharge (walk, stretch, or meditate 10–15 min)"
-    ],
-    rules: [
-      "One full evening this week without screens",
-      "No caffeine after 14:00 to protect sleep"
-    ],
-    prompt: "What helped me focus longest today?"
-  },
-  4: {
-    actionsDesc: "Lock it in with habit stacking and review.",
-    actions: [
-      "Habit stack (e.g., journal after breakfast, stretch after lunch)",
-      "Weekly review (Sun 10–15 min) to set next week goals",
-      "Write one gratitude for non-instant rewards"
-    ],
-    rules: [
-      "Pick 2 habits to keep permanently",
-      "Remove 1 distraction source entirely"
-    ],
-    prompt: "How have focus, mood, and energy changed this month?"
+  weeks: {
+    1: {
+      actions: [
+        "Wake up at the same time",
+        "Morning sunlight 5+ min",
+        "Movement / exercise",
+        "Protein-rich breakfast",
+        "Plan your day",
+        "Mindful social media limit"
+      ],
+      rules: [
+        "No caffeine after 2pm",
+        "Bedtime routine start at 10pm",
+        "No phone in bed",
+        "Max 2h recreational screen time"
+      ],
+      journalPrompt: "Reflect on how your energy feels today."
+    },
+    2: {
+      actions: [
+        "Add 5 min meditation",
+        "Track one habit in detail",
+        "Go for a 20 min walk",
+        "Increase protein by 10g",
+        "Check schedule before lunch",
+        "Limit news consumption"
+      ],
+      rules: [
+        "No snacking after 8pm",
+        "Wind down lights at 9:30pm",
+        "Avoid multitasking"
+      ],
+      journalPrompt: "What felt easier this week compared to last?"
+    },
+    3: {
+      actions: [
+        "Deep work block AM",
+        "Add 5 min gratitude journaling",
+        "Cold exposure or brisk walk",
+        "Social connection call or chat",
+        "One task from 'important not urgent'"
+      ],
+      rules: [
+        "No eating while watching videos",
+        "Limit evening phone use",
+        "Review tomorrow's tasks before bed"
+      ],
+      journalPrompt: "What positive changes have you noticed?"
+    },
+    4: {
+      actions: [
+        "Review all 4 weeks' wins",
+        "Refine habits you keep",
+        "Plan long-term structure",
+        "Test one new productivity tool",
+        "Do something playful"
+      ],
+      rules: [
+        "Protect non-negotiable sleep",
+        "Limit processed sugar",
+        "Weekly planning session"
+      ],
+      journalPrompt: "What’s your plan after this program?"
+    }
   }
 };
 
-// ---- Helpers ----
-const $ = sel => document.querySelector(sel);
-const todayISO = () => new Date().toISOString().slice(0,10);
-const keyFor = (dateISO) => `dopamine:${dateISO}`;
-const getState = (dateISO) => JSON.parse(localStorage.getItem(keyFor(dateISO)) || '{}');
-const setState = (dateISO, obj) => localStorage.setItem(keyFor(dateISO), JSON.stringify(obj));
-const weekOfDate = () => parseInt($("#weekSel").value,10);
+// --- STATE ---
+let state = JSON.parse(localStorage.getItem("dopamineState") || "{}");
 
-// ---- UI init ----
-function buildChecklist(container, items, checked=[]) {
-  container.innerHTML = "";
-  items.forEach((txt, i) => {
-    const id = `${container.id}-${i}`;
-    const wrap = document.createElement('label');
-    wrap.innerHTML = `<input type="checkbox" id="${id}"><div>${txt}</div>`;
-    container.appendChild(wrap);
-    $("#"+id).checked = !!checked[i];
-    $("#"+id).addEventListener('change', save);
+// Ensure defaults
+if (!state.days) state.days = {};
+if (!state.pin) state.pin = "";
+if (!state.dark) state.dark = false;
+if (!state.badges) state.badges = [];
+
+// --- DOM ---
+const weekSel = document.getElementById("weekSel");
+const dateSel = document.getElementById("dateSel");
+const todayBtn = document.getElementById("todayBtn");
+const actionsDiv = document.getElementById("actions");
+const actionsDesc = document.getElementById("actionsDesc");
+const rulesDiv = document.getElementById("rules");
+const journalBox = document.getElementById("journalBox");
+const journalPrompt = document.getElementById("journalPrompt");
+const charCount = document.getElementById("charCount");
+const clearJournalBtn = document.getElementById("clearJournal");
+const streakEl = document.getElementById("streak");
+const scoreEl = document.getElementById("score");
+const weekProgEl = document.getElementById("weekProg");
+const meNowEl = document.getElementById("meNow");
+const ringDaily = document.getElementById("ringDaily");
+const ringWeek = document.getElementById("ringWeek");
+const pixelGrid = document.getElementById("pixelGrid");
+const dailyChart = document.getElementById("dailyChart");
+const badgesDiv = document.getElementById("badges");
+const start25 = document.getElementById("start25");
+const start45 = document.getElementById("start45");
+const start60 = document.getElementById("start60");
+const startCustom = document.getElementById("startCustom");
+const stopTimer = document.getElementById("stopTimer");
+const focusStatus = document.getElementById("focusStatus");
+const focusCountdown = document.getElementById("focusCountdown");
+const remind5 = document.getElementById("remind5");
+const addCal5 = document.getElementById("addCal5");
+const subscribePush = document.getElementById("subscribePush");
+const schedulePush5 = document.getElementById("schedulePush5");
+const completeBtn = document.getElementById("completeBtn");
+const darkToggle = document.getElementById("darkToggle");
+const lock = document.getElementById("lock");
+const pinInput = document.getElementById("pinInput");
+const pinSubmit = document.getElementById("pinSubmit");
+const pinMsg = document.getElementById("pinMsg");
+const exportBtn = document.getElementById("exportBtn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+const importBtn = document.getElementById("importBtn");
+const filePicker = document.getElementById("filePicker");
+
+// --- UTILS ---
+function todayStr() {
+  return new Date().toISOString().split("T")[0];
+}
+function saveState() {
+  localStorage.setItem("dopamineState", JSON.stringify(state));
+}
+function getWeekForDate(date) {
+  // Auto week logic: start week 1 at first day
+  let firstDate = Object.keys(state.days).sort()[0] || todayStr();
+  let diff = Math.floor((new Date(date) - new Date(firstDate)) / (1000 * 60 * 60 * 24));
+  return Math.min(4, Math.floor(diff / 7) + 1);
+}
+
+// --- RENDER ---
+function renderDay(date) {
+  let weekNum = weekSel.value === "auto" ? getWeekForDate(date) : parseInt(weekSel.value);
+  let plan = PLAN.weeks[weekNum];
+  actionsDiv.innerHTML = "";
+  plan.actions.forEach((act, i) => {
+    let id = `a${i}`;
+    let checked = state.days[date]?.actions?.[i] || false;
+    actionsDiv.innerHTML += `<label><input type="checkbox" data-action="${i}" ${checked ? "checked" : ""}> ${act}</label>`;
   });
-}
-
-function load(dateISO){
-  const week = weekOfDate();
-  const data = getState(dateISO);
-  $("#actionsDesc").textContent = PLAN[week].actionsDesc;
-  buildChecklist($("#actions"), PLAN[week].actions, data.actions);
-  buildChecklist($("#rules"), PLAN[week].rules, data.rules);
-  $("#journalPrompt").textContent = PLAN[week].prompt;
-  $("#journalBox").value = data.journal || "";
-  $("#charCount").textContent = (data.journal||"").length;
-  calcStats(dateISO);
-  hintSaved();
-}
-
-function save(){
-  const dateISO = $("#dateSel").value;
-  const week = weekOfDate();
-  const actions = PLAN[week].actions.map((_,i)=> $("#actions-"+i).checked);
-  const rules   = PLAN[week].rules.map((_,i)=> $("#rules-"+i).checked);
-  const journal = $("#journalBox").value;
-  const complete = actions.filter(Boolean).length / PLAN[week].actions.length >= 0.75 ? true : (getState(dateISO).complete || false);
-  setState(dateISO, { week, actions, rules, journal, complete });
-  $("#charCount").textContent = journal.length;
-  calcStats(dateISO);
-  hintSaved();
-}
-
-function calcStats(dateISO){
-  const data = getState(dateISO);
-  const week = weekOfDate();
-  const actions = data.actions || [];
-  const score = Math.round(100 * (actions.filter(Boolean).length || 0) / PLAN[week].actions.length);
-  $("#score").textContent = isFinite(score) ? score+"%" : "0%";
-
-  // week progress for current calendar week, filtered by selected week number
-  let completed=0,total=0;
-  for(let j=0;j<7;j++){
-    const n = new Date($("#dateSel").value);
-    n.setDate(n.getDate()-((n.getDay()+6)%7)+j); // Mon..Sun of current calendar week
-    const k = keyFor(n.toISOString().slice(0,10));
-    const s = JSON.parse(localStorage.getItem(k)||'{}');
-    if(s && s.week===week){ total++; if(s.complete) completed++; }
+  rulesDiv.innerHTML = "";
+  plan.rules.forEach((rule, i) => {
+    let id = `r${i}`;
+    let checked = state.days[date]?.rules?.[i] || false;
+    rulesDiv.innerHTML += `<label><input type="checkbox" data-rule="${i}" ${checked ? "checked" : ""}> ${rule}</label>`;
+  });
+  journalPrompt.textContent = plan.journalPrompt;
+  journalBox.value = state.days[date]?.journal || "";
+  charCount.textContent = journalBox.value.length;
+  if (state.days[date]?.mood && state.days[date]?.energy) {
+    meNowEl.textContent = `M${state.days[date].mood}/E${state.days[date].energy}`;
+  } else {
+    meNowEl.textContent = "—";
   }
-  const wp = total? Math.round(100*completed/total):0;
-  $("#weekProg").textContent = wp+"%";
+  updateStats();
+}
 
-  // streak (consecutive completed days back from selected date)
-  let streak=0;
-  for(let back=0;back<365;back++){
-    const d = new Date(dateISO); d.setDate(d.getDate()-back);
-    const s = getState(d.toISOString().slice(0,10));
-    if(s.complete) streak++; else break;
+// --- EVENTS ---
+todayBtn.onclick = () => {
+  dateSel.value = todayStr();
+  renderDay(todayStr());
+};
+dateSel.onchange = () => {
+  renderDay(dateSel.value);
+};
+actionsDiv.onchange = (e) => {
+  if (e.target.dataset.action !== undefined) {
+    let date = dateSel.value || todayStr();
+    state.days[date] = state.days[date] || {};
+    state.days[date].actions = state.days[date].actions || [];
+    state.days[date].actions[e.target.dataset.action] = e.target.checked;
+    saveState();
+    updateStats();
   }
-  $("#streak").textContent = streak;
-}
-
-function hintSaved(){
-  const el = $("#saveHint");
-  el.textContent = "Saved";
-  el.style.opacity = 1;
-  setTimeout(()=>{el.style.opacity=.6; el.textContent="Autosaved";}, 900);
-}
-
-// ---- Breathing / timers ----
-let breatheTimer=null, fiveTimer=null;
-function startBox(){
-  clearTimers();
-  const phases = ["Inhale 4","Hold 4","Exhale 4","Hold 4"];
-  let p=0, t=4;
-  $("#coach").textContent = "Box breathing started.";
-  tick();
-  function tick(){
-    $("#coach").textContent = phases[p];
-    $("#timer").textContent = t.toString().padStart(2,"0");
-    if(--t<0){ p=(p+1)%4; t=4; }
-    breatheTimer = setTimeout(tick,1000);
+};
+rulesDiv.onchange = (e) => {
+  if (e.target.dataset.rule !== undefined) {
+    let date = dateSel.value || todayStr();
+    state.days[date] = state.days[date] || {};
+    state.days[date].rules = state.days[date].rules || [];
+    state.days[date].rules[e.target.dataset.rule] = e.target.checked;
+    saveState();
+    updateStats();
   }
-}
-function fiveMin(){
-  clearTimers();
-  let s=5*60;
-  const go=()=>{ $("#coach").textContent="5-minute reset in progress";
-    $("#timer").textContent = `${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`;
-    if(s--<=0){ clearTimers(); $("#coach").textContent="Done. Note how you feel."; }
-    else fiveTimer=setTimeout(go,1000);
-  }; go();
-}
-function clearTimers(){ if(breatheTimer){clearTimeout(breatheTimer)} if(fiveTimer){clearTimeout(fiveTimer)} $("#timer").textContent=""; }
+};
+journalBox.oninput = () => {
+  let date = dateSel.value || todayStr();
+  state.days[date] = state.days[date] || {};
+  state.days[date].journal = journalBox.value;
+  charCount.textContent = journalBox.value.length;
+  saveState();
+};
+clearJournalBtn.onclick = () => {
+  journalBox.value = "";
+  journalBox.dispatchEvent(new Event("input"));
+};
 
-// ---- Export / Import ----
-function exportData(){
-  const all = {};
-  for(let i=0;i<localStorage.length;i++){
-    const k = localStorage.key(i);
-    if(k && k.startsWith("dopamine:")) all[k]=JSON.parse(localStorage.getItem(k));
-  }
-  const blob = new Blob([JSON.stringify(all,null,2)],{type:"application/json"});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = "dopamine-data.json";
-  a.click();
-}
-function importData(file){
-  const reader = new FileReader();
-  reader.onload = e=>{
-    try{
-      const obj = JSON.parse(e.target.result);
-      Object.entries(obj).forEach(([k,v])=>{
-        if(k.startsWith("dopamine:")) localStorage.setItem(k,JSON.stringify(v));
-      });
-      load($("#dateSel").value);
-      alert("Import successful.");
-    }catch(err){ alert("Import failed: "+err.message); }
+// Mood/Energy
+document.querySelectorAll("[data-mood]").forEach(btn => {
+  btn.onclick = () => {
+    let date = dateSel.value || todayStr();
+    state.days[date] = state.days[date] || {};
+    state.days[date].mood = parseInt(btn.dataset.mood);
+    saveState();
+    renderDay(date);
   };
-  reader.readAsText(file);
+});
+document.querySelectorAll("[data-energy]").forEach(btn => {
+  btn.onclick = () => {
+    let date = dateSel.value || todayStr();
+    state.days[date] = state.days[date] || {};
+    state.days[date].energy = parseInt(btn.dataset.energy);
+    saveState();
+    renderDay(date);
+  };
+});
+
+// Complete day
+completeBtn.onclick = () => {
+  let date = dateSel.value || todayStr();
+  state.days[date] = state.days[date] || {};
+  state.days[date].complete = true;
+  saveState();
+  updateStats();
+  awardBadges();
+};
+
+// Stats
+function updateStats() {
+  let dates = Object.keys(state.days).sort();
+  let streak = 0, maxStreak = 0;
+  let prev = null;
+  dates.forEach(d => {
+    if (state.days[d].complete) {
+      if (!prev || new Date(d) - new Date(prev) === 86400000) {
+        streak++;
+      } else {
+        streak = 1;
+      }
+      maxStreak = Math.max(maxStreak, streak);
+      prev = d;
+    }
+  });
+  streakEl.textContent = streak;
+  // Score
+  let date = dateSel.value || todayStr();
+  let day = state.days[date] || {};
+  let totalChecks = (day.actions || []).filter(x => x).length + (day.rules || []).filter(x => x).length;
+  let totalItems = (PLAN.weeks[getWeekForDate(date)].actions.length + PLAN.weeks[getWeekForDate(date)].rules.length);
+  let pct = totalItems ? Math.round(totalChecks / totalItems * 100) : 0;
+  scoreEl.textContent = pct + "%";
+  weekProgEl.textContent = Math.min(100, pct) + "%";
+  ringDaily.setAttribute("stroke-dasharray", `${pct},100`);
+  ringWeek.setAttribute("stroke-dasharray", `${pct},100`);
 }
 
-// ---- Wiring ----
-window.addEventListener('load',()=>{
-  // date controls
-  $("#dateSel").value = todayISO();
-  $("#todayBtn").addEventListener('click',()=>{ $("#dateSel").value=todayISO(); load($("#dateSel").value); });
-  $("#dateSel").addEventListener('change',()=> load($("#dateSel").value));
-  $("#weekSel").addEventListener('change',()=> { save(); load($("#dateSel").value); });
+// Badges
+function awardBadges() {
+  let totalDays = Object.keys(state.days).length;
+  if (totalDays >= 7 && !state.badges.includes("Week1")) {
+    state.badges.push("Week1");
+  }
+  saveState();
+  badgesDiv.innerHTML = state.badges.map(b => `<span class="pill">${b}</span>`).join("");
+}
 
-  // journal
-  $("#journalBox").addEventListener('input', save);
-  $("#clearJournal").addEventListener('click',()=>{ $("#journalBox").value=""; save(); });
-
-  // tools
-  $("#boxStart").addEventListener('click', startBox);
-  $("#groundBtn").addEventListener('click', ()=> {
-    clearTimers();
-    $("#coach").innerHTML = "Name 5 things you <b>see</b>, 4 you <b>feel</b>, 3 you <b>hear</b>, 2 you <b>smell</b>, 1 you <b>taste</b>.";
-  });
-  $("#fiveBtn").addEventListener('click', fiveMin);
-
-  // complete
-  $("#completeBtn").addEventListener('click', ()=>{
-    const d = $("#dateSel").value;
-    const s = getState(d);
-    s.complete = true; setState(d,s); calcStats(d); hintSaved();
-  });
-
-  // data
-  $("#exportBtn").addEventListener('click', exportData);
-  $("#importBtn").addEventListener('click', ()=> $("#filePicker").click());
-  $("#filePicker").addEventListener('change', e=> importData(e.target.files[0]));
-
-  // service worker
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('service-worker.js'); }
-
-  load($("#dateSel").value);
-});
+// --- INIT ---
+dateSel.value = todayStr();
+renderDay(todayStr());
+updateStats();
+awardBadges();
