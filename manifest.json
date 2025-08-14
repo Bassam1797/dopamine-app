@@ -5,17 +5,9 @@
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#4cafef",
-  "description": "Offline-first 4-week focus & habit tracker to manage dopamine balance, build routines, and track progress. Includes streaks, badges, mood logs, timer, export/import, and dark mode.",
+  "description": "Offline-first focus & habit tracker with tasks, scheduled reminders, timers, streaks, and a 4-week plan.",
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
