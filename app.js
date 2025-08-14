@@ -9,7 +9,6 @@ const scheduledList = document.getElementById("scheduledList");
 let data = JSON.parse(localStorage.getItem("dopamineData") || "{}");
 const todayStr = () => new Date().toISOString().slice(0,10);
 
-const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 let taskTimers = {}; // running timers
 
 // ==========================
@@ -165,7 +164,7 @@ function startTaskTimer(index, minutes, label){
       clearInterval(taskTimers[index].intervalId);
       el.textContent = "⏰";
       unlockAudio();
-      playLoudAlarm(3000); // 3 sec
+      playBeep(); // now only beep fallback
       notifyUser(label ? `Finished: ${label}` : "Task finished");
       delete taskTimers[index];
       return;
@@ -232,35 +231,7 @@ function notifyUser(msg) {
 }
 
 // ==========================
-//   ALARM SOUND
-// ==========================
-function playLoudAlarm(durationMs = 3000) {
-  try {
-    const audio = new Audio("sounds/alarm.mp3");
-    audio.volume = 1.0;
-    audio.loop = true;
-    audio.play().catch(err => {
-      console.warn("Alarm playback blocked:", err);
-      playBeep();
-    });
-
-    if (!isiOS && navigator.vibrate) {
-      navigator.vibrate([500, 200, 500]);
-    }
-
-    setTimeout(() => {
-      audio.pause();
-      audio.currentTime = 0;
-    }, durationMs);
-
-  } catch (err) {
-    console.error("Alarm error:", err);
-    playBeep();
-  }
-}
-
-// ==========================
-//   AUDIO UNLOCK + BEEP Fallback
+//   AUDIO UNLOCK + LOUDER/LONGER BEEP
 // ==========================
 function unlockAudio(){
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -275,10 +246,18 @@ function playBeep() {
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  osc.type = "sine";
-  osc.frequency.value = 880;
-  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  osc.type = "square"; // louder than sine
+  osc.frequency.value = 1000; // sharp pitch
+  gain.gain.setValueAtTime(0.6, ctx.currentTime); // louder
   osc.connect(gain).connect(ctx.destination);
+
+  const duration = 3; // total seconds
+  const pulse = 0.3; // seconds per beep
+  for (let t = 0; t < duration; t += pulse * 2) {
+    gain.gain.setValueAtTime(0.6, ctx.currentTime + t);
+    gain.gain.setValueAtTime(0.0, ctx.currentTime + t + pulse);
+  }
+
   osc.start();
-  osc.stop(ctx.currentTime + 0.5);
+  osc.stop(ctx.currentTime + duration);
 }
