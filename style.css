@@ -1,0 +1,109 @@
+/* === Base Styles === */
+:root { --mut:#6b7280; }
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.mut { color: var(--mut); }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #4cafef;
+  color: white;
+  padding: 10px 15px;
+}
+h1 { margin: 0; font-size: 1.3rem; }
+
+main {
+  flex: 1;
+  padding: 10px;
+  max-width: 720px;
+  margin: auto;
+}
+h2 { margin: 14px 0 8px; }
+
+/* Cards/sections */
+section {
+  margin-bottom: 16px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Inputs */
+label { display: inline-block; margin: 5px 10px 5px 0; }
+input[type="checkbox"] { margin-right: 6px; }
+textarea { width: 100%; font-size: 1rem; padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb; }
+
+/* Buttons */
+button {
+  padding: 8px 12px;
+  margin: 5px 4px;
+  border: none;
+  border-radius: 8px;
+  background: #4cafef;
+  color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+button:hover { background: #3996d6; }
+#completeBtn { background:#16a34a; }
+#stopTimer { background:#ef4444; }
+#todayBtn { background:#2563eb; }
+
+/* Rings & countdown */
+.rings { display:flex; gap:8px; align-items:center; }
+.countdown { font-size: 2rem; font-weight: 700; margin-top: 6px; }
+
+/* Badges */
+.pill {
+  display: inline-block;
+  background: #ffc107;
+  color: black;
+  padding: 4px 10px;
+  margin: 3px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+/* Progress bars */
+.progress {
+  width: 100%;
+  height: 10px;
+  background: #e9edf1;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0 2px;
+}
+.progress > .fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #49b785, #0b7a4b);
+  transition: width 300ms ease;
+}
+
+/* Smooth theme transitions */
+* { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* === Dark Mode === */
+body.dark { background: #121212; color: #eaeaea; }
+body.dark header { background: #222; }
+body.dark section { background: #1e1e1e; color: #eaeaea; }
+body.dark textarea { background:#131313; color:#eaeaea; border-color:#2a2a2a; }
+body.dark .progress { background:#1f2937; }
+body.dark .progress > .fill { background: linear-gradient(90deg,#34d399,#059669); }
+
+/* Responsive */
+@media (max-width: 520px) {
+  h1 { font-size: 1.1rem; }
+  button { font-size: 0.85rem; padding: 7px 10px; }
+}
