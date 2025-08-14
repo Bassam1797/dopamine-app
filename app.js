@@ -1,6 +1,6 @@
-/* ==== Dopamine App – Full JS ==== */
+/* ==== Dopamine App – Full JS with Auto-Week + Settings ==== */
 
-// Week data
+/* ---------- Program plan (edit as you wish) ---------- */
 const plan = {
   1: { actions: ["Wake up at same time", "Plan day in morning", "Walk 20 min", "Read 15 min"], rules: ["No social media in morning", "Limit sugar"], journal: "Write 3 things you're grateful for" },
   2: { actions: ["Wake up at same time", "Work on priority task 1h", "Exercise 30 min", "Read 15 min"], rules: ["No screens after 10pm", "Limit caffeine"], journal: "Reflect on your wins" },
@@ -8,10 +8,21 @@ const plan = {
   4: { actions: ["Wake up at same time", "Deep work 2h", "Exercise 30 min", "Read 15 min"], rules: ["No social media during work", "Drink 2L water"], journal: "How can tomorrow be better?" }
 };
 
-let data = JSON.parse(localStorage.getItem("dopamineData") || "{}");
-let currentDate = new Date().toISOString().split("T")[0];
+/* ---------- Persistent state ---------- */
+let data = JSON.parse(localStorage.getItem("dopamineData") || "{}");           // daily records
+const TODAY = new Date().toISOString().slice(0,10);
 
-// Elements
+/* Meta (start date, loop flag) */
+const META_KEY = "dopamineMeta";
+let meta = JSON.parse(localStorage.getItem(META_KEY) || "{}");
+if (!meta.startDate) { meta.startDate = TODAY; }
+if (meta.loopWeeks === undefined) { meta.loopWeeks = true; }
+saveMeta();
+
+function saveMeta(){ localStorage.setItem(META_KEY, JSON.stringify(meta)); }
+function saveData(){ localStorage.setItem("dopamineData", JSON.stringify(data)); }
+
+/* ---------- Elements ---------- */
 const weekSel = document.getElementById("weekSel");
 const dateSel = document.getElementById("dateSel");
 const actionsDiv = document.getElementById("actions");
@@ -29,235 +40,240 @@ const moodBtns = document.getElementById("moodBtns");
 const energyBtns = document.getElementById("energyBtns");
 const timerDisplay = document.getElementById("timerDisplay");
 
-// Populate week selector
+const startDateLabel = document.getElementById("startDateLabel");
+const resetStartBtn   = document.getElementById("resetStartBtn");
+const loopToggle      = document.getElementById("loopToggle");
+
+/* ---------- Week selector (persist choice) ---------- */
 ["Auto", 1, 2, 3, 4].forEach(w => {
-  let opt = document.createElement("option");
-  opt.value = w;
-  opt.textContent = w;
+  const opt = document.createElement("option");
+  opt.value = String(w);
+  opt.textContent = String(w);
   weekSel.appendChild(opt);
 });
-weekSel.value = "Auto";
+const WEEK_MODE_KEY = "dopamineWeekMode";
+weekSel.value = localStorage.getItem(WEEK_MODE_KEY) || "Auto";
+weekSel.onchange = () => { localStorage.setItem(WEEK_MODE_KEY, weekSel.value); render(); };
 
-// Date selector
+/* ---------- Date init ---------- */
+let currentDate = TODAY;
 dateSel.value = currentDate;
-dateSel.addEventListener("change", () => {
-  currentDate = dateSel.value;
-  render();
-});
+dateSel.addEventListener("change", () => { currentDate = dateSel.value; render(); });
 
-// Dark mode toggle
+/* ---------- Dark mode ---------- */
 document.getElementById("darkToggle").addEventListener("click", () => {
   document.body.classList.toggle("dark");
   localStorage.setItem("dopamineDark", document.body.classList.contains("dark"));
 });
-if (localStorage.getItem("dopamineDark") === "true") {
-  document.body.classList.add("dark");
+if (localStorage.getItem("dopamineDark") === "true") document.body.classList.add("dark");
+
+/* ---------- Auto-week helpers ---------- */
+function daysBetween(a, b){ return Math.floor((new Date(b) - new Date(a)) / 86400000); }
+function getAutoWeek(dateStr){
+  const d = daysBetween(meta.startDate, dateStr);
+  const weekIndex = Math.max(0, Math.floor(d / 7));  // 0..∞
+  return meta.loopWeeks ? (weekIndex % 4) + 1 : Math.min(4, weekIndex + 1);
 }
 
-// Render UI
-function render() {
-  let weekNum = weekSel.value === "Auto" ? getAutoWeek(currentDate) : parseInt(weekSel.value);
-  let dayData = data[currentDate] || { actions: [], rules: [], journal: "", mood: null, energy: null };
+/* ---------- Render ---------- */
+function render(){
+  // Settings panel
+  startDateLabel.textContent = meta.startDate;
+  loopToggle.checked = !!meta.loopWeeks;
 
+  // compute week
+  const weekNum = (weekSel.value === "Auto") ? getAutoWeek(currentDate) : parseInt(weekSel.value,10);
+  if (weekSel.value === "Auto") {
+    weekSel.options[0].textContent = `Auto (Week ${weekNum})`;
+  } else {
+    weekSel.options[0].textContent = "Auto";
+  }
+
+  const dayData = data[currentDate] || { actions: [], rules: [], journal: "", mood: null, energy: null };
+
+  // actions
   actionsDiv.innerHTML = "";
-  rulesDiv.innerHTML = "";
-
-  plan[weekNum].actions.forEach((a, i) => {
-    let lbl = document.createElement("label");
-    let cb = document.createElement("input");
+  plan[weekNum].actions.forEach((txt, i)=>{
+    const lbl = document.createElement("label");
+    const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.checked = dayData.actions[i] || false;
-    cb.addEventListener("change", () => {
-      dayData.actions[i] = cb.checked;
-      saveDay(dayData);
-    });
-    lbl.appendChild(cb);
-    lbl.appendChild(document.createTextNode(a));
+    cb.checked = !!dayData.actions[i];
+    cb.addEventListener("change", ()=>{ dayData.actions[i] = cb.checked; saveDay(dayData); });
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(txt));
     actionsDiv.appendChild(lbl);
   });
 
-  plan[weekNum].rules.forEach((r, i) => {
-    let lbl = document.createElement("label");
-    let cb = document.createElement("input");
+  // rules
+  rulesDiv.innerHTML = "";
+  plan[weekNum].rules.forEach((txt, i)=>{
+    const lbl = document.createElement("label");
+    const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.checked = dayData.rules[i] || false;
-    cb.addEventListener("change", () => {
-      dayData.rules[i] = cb.checked;
-      saveDay(dayData);
-    });
-    lbl.appendChild(cb);
-    lbl.appendChild(document.createTextNode(r));
+    cb.checked = !!dayData.rules[i];
+    cb.addEventListener("change", ()=>{ dayData.rules[i] = cb.checked; saveDay(dayData); });
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(txt));
     rulesDiv.appendChild(lbl);
   });
 
+  // journal
   journal.value = dayData.journal || "";
-  journal.oninput = () => { dayData.journal = journal.value; saveDay(dayData); };
+  journal.oninput = ()=>{ dayData.journal = journal.value; saveDay(dayData); };
 
-  // Mood/Energy
-  moodBtns.innerHTML = "";
-  energyBtns.innerHTML = "";
-  for (let i = 1; i <= 5; i++) {
-    let mBtn = document.createElement("button");
-    mBtn.textContent = `😊${i}`;
-    if (dayData.mood === i) mBtn.style.background = "orange";
-    mBtn.onclick = () => { dayData.mood = i; saveDay(dayData); render(); };
-    moodBtns.appendChild(mBtn);
+  // mood / energy
+  moodBtns.innerHTML = ""; energyBtns.innerHTML = "";
+  for (let i=1;i<=5;i++){
+    const m = document.createElement("button");
+    m.textContent = `😊${i}`;
+    if (dayData.mood === i) m.style.background = "orange";
+    m.onclick = ()=>{ dayData.mood = i; saveDay(dayData); render(); };
+    moodBtns.appendChild(m);
 
-    let eBtn = document.createElement("button");
-    eBtn.textContent = `⚡${i}`;
-    if (dayData.energy === i) eBtn.style.background = "orange";
-    eBtn.onclick = () => { dayData.energy = i; saveDay(dayData); render(); };
-    energyBtns.appendChild(eBtn);
+    const e = document.createElement("button");
+    e.textContent = `⚡${i}`;
+    if (dayData.energy === i) e.style.background = "orange";
+    e.onclick = ()=>{ dayData.energy = i; saveDay(dayData); render(); };
+    energyBtns.appendChild(e);
   }
 
   updateStats();
+  renderBadges();
 }
 
-// Auto week calc
-function getAutoWeek(dateStr) {
-  let start = new Date(Object.keys(data)[0] || currentDate);
-  let today = new Date(dateStr);
-  let diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-  return (Math.floor(diff / 7) % 4) + 1;
-}
+function saveDay(dayData){ data[currentDate] = dayData; saveData(); updateStats(); }
 
-// Save
-function saveDay(dayData) {
-  data[currentDate] = dayData;
-  localStorage.setItem("dopamineData", JSON.stringify(data));
-  updateStats();
-}
-
-// Stats
-function updateStats() {
-  let day = data[currentDate] || {};
-  let totalChecks = (day.actions || []).concat(day.rules || []);
-  let checked = totalChecks.filter(Boolean).length;
-  let score = totalChecks.length ? Math.round((checked / totalChecks.length) * 100) : 0;
+/* ---------- Stats, streak, badges ---------- */
+function updateStats(){
+  const day = data[currentDate] || {};
+  const checks = (day.actions||[]).concat(day.rules||[]);
+  const score = checks.length ? Math.round(100 * checks.filter(Boolean).length / checks.length) : 0;
   scoreEl.textContent = `${score}%`;
-  barToday.style.width = `${score}%`;
-  ringDaily.setAttribute("stroke-dasharray", `${score * 2.2}, 220`);
+  if (barToday) barToday.style.width = `${score}%`;
+  ringDaily.setAttribute("stroke-dasharray", `${score*2.2},220`);
 
-  // Week progress
-  let weekNum = weekSel.value === "Auto" ? getAutoWeek(currentDate) : parseInt(weekSel.value);
-  let weekDates = Object.keys(data).filter(d => getAutoWeek(d) === weekNum);
-  let weekScores = weekDates.map(d => {
-    let c = (data[d].actions || []).concat(data[d].rules || []);
-    return c.length ? c.filter(Boolean).length / c.length : 0;
-  });
-  let weekAvg = weekScores.length ? Math.round((weekScores.reduce((a,b)=>a+b,0)/weekScores.length)*100) : 0;
-  weekProgEl.textContent = `${weekAvg}%`;
-  barWeek.style.width = `${weekAvg}%`;
-  ringWeek.setAttribute("stroke-dasharray", `${weekAvg * 2.2}, 220`);
+  // week average for selected/auto week
+  const wk = (weekSel.value === "Auto") ? getAutoWeek(currentDate) : parseInt(weekSel.value,10);
+  const dates = Object.keys(data).sort().filter(d => (weekSel.value==="Auto" ? getAutoWeek(d)===wk : true));
+  const avg = dates.length ? Math.round(100 * dates.reduce((acc,d)=>{
+    const c = (data[d].actions||[]).concat((data[d].rules||[]));
+    return acc + (c.length ? (c.filter(Boolean).length / c.length) : 0);
+  },0) / dates.length) : 0;
+  weekProgEl.textContent = `${avg}%`;
+  if (barWeek) barWeek.style.width = `${avg}%`;
+  ringWeek.setAttribute("stroke-dasharray", `${avg*2.2},220`);
 
-  // Streak
-  streakEl.textContent = calcStreak();
-
-  // Badges
-  badgesDiv.innerHTML = "";
-  if (calcStreak() >= 7) badgesDiv.innerHTML += `<span class="pill">🏅 7-day streak</span>`;
-  if (weekAvg === 100) badgesDiv.innerHTML += `<span class="pill">🌟 Perfect Week</span>`;
-  if (Object.keys(data).length >= 28) badgesDiv.innerHTML += `<span class="pill">🏆 4-week finisher</span>`;
-}
-
-function calcStreak() {
-  let dates = Object.keys(data).sort();
+  // streak (consecutive days with all items checked)
+  const allDates = Object.keys(data).sort();
   let streak = 0;
-  for (let i = dates.length - 1; i >= 0; i--) {
-    let date = dates[i];
-    let c = (data[date].actions || []).concat(data[date].rules || []);
-    if (c.length && c.every(Boolean)) streak++;
-    else break;
+  for (let i = allDates.length-1; i>=0; i--){
+    const d = allDates[i];
+    const c = (data[d].actions||[]).concat(data[d].rules||[]);
+    if (c.length && c.every(Boolean)) streak++; else break;
   }
-  return streak;
+  streakEl.textContent = streak;
 }
 
-// Mark complete
-document.getElementById("markComplete").onclick = () => {
-  let dayData = data[currentDate] || { actions: [], rules: [], journal: "", mood: null, energy: null };
-  dayData.actions = plan[getAutoWeek(currentDate)].actions.map(() => true);
-  dayData.rules = plan[getAutoWeek(currentDate)].rules.map(() => true);
-  saveDay(dayData);
-  render();
-};
+function renderBadges(){
+  badgesDiv.innerHTML = "";
+  // 7-day streak
+  const s = parseInt(streakEl.textContent || "0", 10);
+  if (s >= 7) badgesDiv.innerHTML += `<span class="pill">🏅 7-day streak</span>`;
 
-// Clear journal
-document.getElementById("clearJournal").onclick = () => {
-  journal.value = "";
-  let dayData = data[currentDate];
-  if (dayData) { dayData.journal = ""; saveDay(dayData); }
-};
-
-// Export / Import
-function exportJSON() {
-  let blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement("a");
-  a.href = url; a.download = "dopamine-data.json"; a.click();
-}
-function exportCSV() {
-  let rows = [["Date", "Actions Done", "Rules Done", "Mood", "Energy", "Journal"]];
-  Object.keys(data).forEach(d => {
-    rows.push([d, (data[d].actions||[]).filter(Boolean).length, (data[d].rules||[]).filter(Boolean).length, data[d].mood, data[d].energy, JSON.stringify(data[d].journal)]);
+  // perfect week
+  const wk = (weekSel.value === "Auto") ? getAutoWeek(currentDate) : parseInt(weekSel.value,10);
+  const weekDates = Object.keys(data).filter(d=> (getAutoWeek(d)===wk));
+  const weekPerfect = weekDates.every(d=>{
+    const c = (data[d].actions||[]).concat(data[d].rules||[]);
+    return c.length && c.every(Boolean);
   });
-  let csv = rows.map(r => r.join(",")).join("\n");
-  let blob = new Blob([csv], {type: "text/csv"});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement("a");
-  a.href = url; a.download = "dopamine-data.csv"; a.click();
+  if (weekPerfect && weekDates.length) badgesDiv.innerHTML += `<span class="pill">🌟 Perfect Week</span>`;
+
+  // 28 completions
+  const totalComplete = Object.values(data).filter(v=>{
+    const c = (v.actions||[]).concat(v.rules||[]);
+    return c.length && c.every(Boolean);
+  }).length;
+  if (totalComplete >= 28) badgesDiv.innerHTML += `<span class="pill">🏆 4-week finisher</span>`;
 }
-document.getElementById("importFile").onchange = function() {
-  let file = this.files[0];
-  let reader = new FileReader();
-  reader.onload = (e) => {
-    data = JSON.parse(e.target.result);
-    localStorage.setItem("dopamineData", JSON.stringify(data));
-    render();
-  };
-  reader.readAsText(file);
+
+/* ---------- Mark complete & clear journal ---------- */
+document.getElementById("markComplete").onclick = ()=>{
+  const wk = (weekSel.value === "Auto") ? getAutoWeek(currentDate) : parseInt(weekSel.value,10);
+  const d = data[currentDate] || { actions: [], rules: [], journal: "", mood:null, energy:null };
+  d.actions = plan[wk].actions.map(()=>true);
+  d.rules   = plan[wk].rules.map(()=>true);
+  saveDay(d); render();
+};
+document.getElementById("clearJournal").onclick = ()=>{
+  const d = data[currentDate] || {};
+  d.journal = ""; saveDay(d); journal.value = "";
 };
 
-// Timer
+/* ---------- Export / Import ---------- */
+function exportJSON(){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  a.download = "dopamine-data.json"; a.click();
+}
+function exportCSV(){
+  const rows = [["Date","Actions Done","Rules Done","Mood","Energy","Journal"]];
+  Object.keys(data).forEach(d=>{
+    rows.push([d,(data[d].actions||[]).filter(Boolean).length,(data[d].rules||[]).filter(Boolean).length,data[d].mood||"",data[d].energy||"",JSON.stringify(data[d].journal||"")]);
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}));
+  a.download = "dopamine-data.csv"; a.click();
+}
+document.getElementById("importFile").onchange = function(){
+  const file = this.files[0]; if(!file) return;
+  const fr = new FileReader();
+  fr.onload = (e)=>{ data = JSON.parse(e.target.result); saveData(); render(); };
+  fr.readAsText(file);
+};
+
+/* ---------- Timer with alarm + notification ---------- */
 let timerInt;
-function startTimer(mins) {
-  let end = Date.now() + mins * 60 * 1000;
+function startTimer(mins){
+  const end = Date.now() + mins*60*1000;
   clearInterval(timerInt);
-  timerInt = setInterval(() => {
-    let left = end - Date.now();
-    if (left <= 0) {
+  timerInt = setInterval(()=>{
+    const left = end - Date.now();
+    if (left <= 0){
       clearInterval(timerInt);
       timerDisplay.textContent = "⏰ Time's up!";
       notify("⏰ Time's up!");
-      if ("vibrate" in navigator) navigator.vibrate(500);
-      new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg").play();
+      navigator.vibrate?.(300);
+      try { new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg").play(); } catch(e){}
     } else {
-      let m = Math.floor(left / 60000);
-      let s = Math.floor((left % 60000) / 1000);
-      timerDisplay.textContent = `${m}:${s.toString().padStart(2,"0")}`;
+      const m = Math.floor(left/60000), s = Math.floor((left%60000)/1000);
+      timerDisplay.textContent = `${m}:${String(s).padStart(2,"0")}`;
     }
-  }, 500);
+  }, 250);
 }
-function startCustom() {
-  let mins = parseInt(document.getElementById("customMins").value);
-  if (mins > 0) startTimer(mins);
+function startCustom(){
+  const n = parseInt(document.getElementById("customMins").value,10);
+  if (n>0) startTimer(n);
 }
-document.getElementById("stopTimer").onclick = () => { clearInterval(timerInt); timerDisplay.textContent = ""; };
+document.getElementById("stopTimer").onclick = ()=>{ clearInterval(timerInt); timerDisplay.textContent=""; };
 
-// Notifications
-if ("Notification" in window && Notification.permission !== "granted") {
-  Notification.requestPermission();
-}
-function notify(msg) {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification(msg);
-  }
+/* ---------- Notifications ---------- */
+if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
+function notify(msg){
+  if ("Notification" in window && Notification.permission === "granted"){ new Notification(msg); }
 }
 
-// Init
+/* ---------- Settings actions ---------- */
+resetStartBtn.onclick = ()=>{
+  meta.startDate = TODAY; saveMeta(); render();
+  alert("Start date reset to today. Auto week will compute from now.");
+};
+loopToggle.onchange = ()=>{
+  meta.loopWeeks = loopToggle.checked; saveMeta(); render();
+};
+
+/* ---------- Init ---------- */
 render();
 
-// Register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker Registered"));
+/* ---------- PWA: service worker ---------- */
+if ("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js").catch(()=>{});
 }
