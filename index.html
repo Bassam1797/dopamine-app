@@ -6,6 +6,7 @@
 <title>Dopamine 4-Week Plan</title>
 <link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#4cafef" />
 </head>
 <body>
 
@@ -32,11 +33,13 @@
 
     <svg height="80" width="80" aria-label="Today ring">
       <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
+      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none"
+              stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
     </svg>
     <svg height="80" width="80" aria-label="Week ring">
       <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
+      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none"
+              stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
     </svg>
   </section>
 
@@ -75,9 +78,7 @@
   <section id="tasks">
     <h2>Tasks</h2>
     <div class="mut">Create tasks for today. Each task has its own timer.</div>
-
     <div id="tasksList"></div>
-
     <div class="task-actions">
       <button id="addTaskBtn">+ Add Task</button>
     </div>
