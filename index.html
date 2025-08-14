@@ -71,6 +71,50 @@
     <div id="energyBtns"></div>
   </section>
 
+  <!-- Tasks (dynamic) -->
+  <section id="tasks">
+    <h2>Tasks</h2>
+    <div class="mut">Create tasks for today. Each task has its own timer.</div>
+
+    <div id="tasksList"></div>
+
+    <div class="task-actions">
+      <button id="addTaskBtn">+ Add Task</button>
+    </div>
+  </section>
+
+  <!-- Scheduled Tasks (auto-move to Today when due) -->
+  <section id="scheduled">
+    <h2>Scheduled Tasks</h2>
+    <div class="mut">Tasks here will notify you and move into <em>Today</em> when their time arrives.</div>
+
+    <form id="schedForm" autocomplete="off">
+      <input type="text" id="schedText" placeholder="Task title" />
+      <input type="date" id="schedDate" />
+      <input type="time" id="schedTime" />
+      <input type="number" id="schedMin" min="1" value="25" title="Minutes" />
+      <select id="schedRepeat" title="Repeat">
+        <option value="none">No repeat</option>
+        <option value="daily">Daily</option>
+        <option value="weekdays">Weekdays</option>
+        <option value="weekly">Weekly</option>
+      </select>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="schedAutoStart" checked /> Auto-start
+      </label>
+      <button type="submit">Add</button>
+    </form>
+
+    <div id="scheduledList"></div>
+  </section>
+
+  <!-- Weekly Planner (next 7 days) -->
+  <section id="planner">
+    <h2>Weekly Planner</h2>
+    <div class="mut">Upcoming scheduled tasks for the next 7 days.</div>
+    <div id="plannerGrid" class="planner-grid"></div>
+  </section>
+
   <!-- Timer -->
   <section>
     <h2>Timer</h2>
@@ -105,7 +149,7 @@
     <div class="settings-row">
       <div>
         <div><strong>Start date:</strong> <span id="startDateLabel">—</span></div>
-        <div><small class="mut">Auto week is computed as floor(days since start ÷ 7) + 1.</small></div>
+        <div><small class="mut">Auto week = floor(days since start ÷ 7) + 1.</small></div>
       </div>
       <div class="settings-actions">
         <button id="resetStartBtn" title="Reset start date to today">Reset to Today</button>
