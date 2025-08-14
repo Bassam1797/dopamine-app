@@ -20,28 +20,23 @@ header {
 }
 h1 { margin: 0; font-size: 1.3rem; }
 
-main {
-  flex: 1;
-  padding: 10px;
-  max-width: 700px;
-  margin: auto;
-}
+main { flex: 1; padding: 10px; max-width: 900px; margin: auto; }
 h2, h3 { margin-top: 20px; }
 
 label { display: inline-block; margin: 5px 10px 5px 0; }
 input[type="checkbox"] { margin-right: 6px; }
-textarea { width: 100%; font-size: 1rem; padding: 5px; }
+textarea { width: 100%; font-size: 1rem; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
 
 button {
-  padding: 6px 10px;
+  padding: 8px 12px;
   margin: 5px 4px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #4cafef;
   color: white;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease, transform .05s ease;
+  transition: background .2s ease, transform .05s ease;
 }
 button:hover { background: #3996d6; }
 button:active { transform: scale(0.98); }
@@ -52,18 +47,81 @@ section {
   margin-bottom: 20px;
   background: white;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 /* Progress bars */
-.progress { width:100%; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:6px; }
+.progress { width:100%; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:6px; }
 .fill { width:0%; height:100%; background:#49b785; transition:width .35s ease; }
 
 /* Settings */
 #settings .settings-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 #settings .settings-actions { display:flex; gap:8px; }
 .toggle { display:flex; align-items:center; gap:8px; }
+
+/* Tasks (dynamic) */
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr 78px 70px 70px 84px 36px 36px 36px;
+  gap: 8px; align-items:center; margin: 8px 0;
+}
+.task-row input[type="text"],
+.task-row input[type="number"] {
+  width:100%; padding:8px; border:1px solid #e5e7eb; border-radius:8px;
+}
+.task-actions { margin-top: 8px; }
+.task-countdown { font-variant-numeric: tabular-nums; text-align: right; }
+.btn-icon {
+  width: 36px; height: 36px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; border-radius: 8px; background: #e5e7eb; color: #111;
+}
+.btn-icon:hover { background:#d6dae0; }
+.btn-del { background:#ef4444; color:#fff; }
+.btn-del:hover { background:#dc2626; }
+
+/* Scheduled Tasks */
+#schedForm {
+  display: grid;
+  grid-template-columns: 1fr 120px 110px 90px 130px auto 90px;
+  gap: 8px; align-items: center; margin: 10px 0 6px;
+}
+#schedForm input[type="text"],
+#schedForm input[type="date"],
+#schedForm input[type="time"],
+#schedForm input[type="number"],
+#schedForm select {
+  padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;
+}
+.checkbox-inline { display:flex; align-items:center; gap:6px; }
+
+.sched-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px; align-items: center; margin: 8px 0;
+}
+.sched-title { font-weight: 600; }
+.sched-when  { color: #555; }
+.sched-min   { color: #111; }
+.sched-actions { display:flex; gap:6px; justify-content:flex-end; }
+
+/* Weekly Planner */
+.planner-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.planner-day {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px;
+}
+.planner-day h4 { margin: 4px 0 6px; font-size: .95rem; }
+.plan-item { font-size: .9rem; margin: 4px 0; }
+.plan-item small { color:#6b7280; }
 
 /* Footer */
 footer { font-size: .8rem; text-align:center; padding: 10px; background: #ddd; }
@@ -77,10 +135,20 @@ body.dark .fill { background:#34d399; }
 body.dark footer { background:#222; }
 body.dark button { background:#4cafef; }
 body.dark button:hover { background:#3996d6; }
+body.dark .planner-day { background:#171a1f; border-color:#2a2f39; }
+body.dark #schedForm input, 
+body.dark #schedForm select,
+body.dark .task-row input { background:#131313; color:#eaeaea; border-color:#2a2a2a; }
+body.dark .sched-when { color:#a3a3a3; }
+body.dark .btn-icon { background:#2b3545; color:#eaeaea; }
+body.dark .btn-icon:hover { background:#3a465b; }
 
 /* Responsive */
-@media (max-width: 520px) {
-  h1 { font-size: 1.1rem; }
-  button { font-size: 0.85rem; padding: 6px 9px; }
-  #settings .settings-row { flex-direction: column; align-items:flex-start; }
+@media (max-width: 860px) {
+  .planner-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 560px) {
+  #schedForm { grid-template-columns: 1fr 120px 110px 90px 130px; }
+  .planner-grid { grid-template-columns: repeat(2, 1fr); }
+  .task-row { grid-template-columns: 1fr 70px 62px 62px 70px 32px 32px 32px; }
 }
