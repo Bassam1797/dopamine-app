@@ -1,12 +1,9 @@
 /* === Base Styles === */
 body {
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   margin: 0;
   background: #f5f5f5;
   color: #222;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 .mut { color: #6b7280; }
 
@@ -20,12 +17,23 @@ header {
 }
 h1 { margin: 0; font-size: 1.3rem; }
 
-main { flex: 1; padding: 10px; max-width: 900px; margin: auto; }
+main { padding: 10px; max-width: 900px; margin: auto; }
 h2, h3 { margin-top: 20px; }
+
+section {
+  margin-bottom: 20px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
 
 label { display: inline-block; margin: 5px 10px 5px 0; }
 input[type="checkbox"] { margin-right: 6px; }
-textarea { width: 100%; font-size: 1rem; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
+textarea {
+  width: 100%; font-size: 1rem; padding: 8px;
+  border-radius: 8px; border: 1px solid #e5e7eb;
+}
 
 button {
   padding: 8px 12px;
@@ -43,14 +51,6 @@ button:active { transform: scale(0.98); }
 
 svg { margin: 5px; }
 
-section {
-  margin-bottom: 20px;
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
 /* Progress bars */
 .progress { width:100%; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:6px; }
 .fill { width:0%; height:100%; background:#49b785; transition:width .35s ease; }
@@ -63,48 +63,34 @@ section {
 /* Tasks (dynamic) */
 .task-row {
   display: grid;
-  grid-template-columns: 1fr 78px 70px 70px 84px 36px 36px 36px;
+  grid-template-columns: 24px 1fr 78px 70px 70px 1fr;
+  /* [checkbox][text][mins][start][stop][countdown] */
   gap: 8px; align-items:center; margin: 8px 0;
 }
 .task-row input[type="text"],
-.task-row input[type="number"] {
+.task-row input[type="number"],
+.sched-row input[type="text"],
+.sched-row input[type="date"],
+.sched-row input[type="time"],
+.sched-row input[type="number"],
+#schedForm input, #schedForm select {
   width:100%; padding:8px; border:1px solid #e5e7eb; border-radius:8px;
 }
-.task-actions { margin-top: 8px; }
 .task-countdown { font-variant-numeric: tabular-nums; text-align: right; }
-.btn-icon {
-  width: 36px; height: 36px; padding: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-weight: 700; border-radius: 8px; background: #e5e7eb; color: #111;
-}
-.btn-icon:hover { background:#d6dae0; }
-.btn-del { background:#ef4444; color:#fff; }
-.btn-del:hover { background:#dc2626; }
 
 /* Scheduled Tasks */
 #schedForm {
   display: grid;
-  grid-template-columns: 1fr 120px 110px 90px 130px auto 90px;
+  grid-template-columns: 1fr 120px 110px 90px 130px auto 90px; /* title, date, time, mins, repeat, autostart, add */
   gap: 8px; align-items: center; margin: 10px 0 6px;
-}
-#schedForm input[type="text"],
-#schedForm input[type="date"],
-#schedForm input[type="time"],
-#schedForm input[type="number"],
-#schedForm select {
-  padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;
 }
 .checkbox-inline { display:flex; align-items:center; gap:6px; }
 
 .sched-row {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr 160px 110px 90px 70px; /* title, date, time, mins, del */
   gap: 8px; align-items: center; margin: 8px 0;
 }
-.sched-title { font-weight: 600; }
-.sched-when  { color: #555; }
-.sched-min   { color: #111; }
-.sched-actions { display:flex; gap:6px; justify-content:flex-end; }
 
 /* Weekly Planner */
 .planner-grid {
@@ -124,7 +110,7 @@ section {
 .plan-item small { color:#6b7280; }
 
 /* Footer */
-footer { font-size: .8rem; text-align:center; padding: 10px; background: #ddd; }
+footer { font-size: .8rem; text-align:center; padding: 10px; background: #ddd; border-top: 1px solid #ccc; }
 
 /* Dark Mode */
 body.dark { background:#121212; color:#eaeaea; }
@@ -139,16 +125,13 @@ body.dark .planner-day { background:#171a1f; border-color:#2a2f39; }
 body.dark #schedForm input, 
 body.dark #schedForm select,
 body.dark .task-row input { background:#131313; color:#eaeaea; border-color:#2a2a2a; }
-body.dark .sched-when { color:#a3a3a3; }
-body.dark .btn-icon { background:#2b3545; color:#eaeaea; }
-body.dark .btn-icon:hover { background:#3a465b; }
 
 /* Responsive */
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   .planner-grid { grid-template-columns: repeat(4, 1fr); }
 }
-@media (max-width: 560px) {
-  #schedForm { grid-template-columns: 1fr 120px 110px 90px 130px; }
+@media (max-width: 680px) {
+  #schedForm { grid-template-columns: 1fr 120px 110px 90px 130px 90px; }
   .planner-grid { grid-template-columns: repeat(2, 1fr); }
-  .task-row { grid-template-columns: 1fr 70px 62px 62px 70px 32px 32px 32px; }
+  .task-row { grid-template-columns: 24px 1fr 70px 62px 62px 1fr; }
 }
