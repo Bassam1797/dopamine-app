@@ -1,4 +1,4 @@
-/* ==== Dopamine App – Full JS with Auto-Week + Settings ==== */
+/* ==== Dopamine App – Full JS with Auto-Week, Settings, and iOS-safe Timer Alerts ==== */
 
 /* ---------- Program plan (edit as you wish) ---------- */
 const plan = {
@@ -9,7 +9,7 @@ const plan = {
 };
 
 /* ---------- Persistent state ---------- */
-let data = JSON.parse(localStorage.getItem("dopamineData") || "{}");           // daily records
+let data = JSON.parse(localStorage.getItem("dopamineData") || "{}"); // daily records
 const TODAY = new Date().toISOString().slice(0,10);
 
 /* Meta (start date, loop flag) */
@@ -83,11 +83,7 @@ function render(){
 
   // compute week
   const weekNum = (weekSel.value === "Auto") ? getAutoWeek(currentDate) : parseInt(weekSel.value,10);
-  if (weekSel.value === "Auto") {
-    weekSel.options[0].textContent = `Auto (Week ${weekNum})`;
-  } else {
-    weekSel.options[0].textContent = "Auto";
-  }
+  if (weekSel.value === "Auto") weekSel.options[0].textContent = `Auto (Week ${weekNum})`; else weekSel.options[0].textContent = "Auto";
 
   const dayData = data[currentDate] || { actions: [], rules: [], journal: "", mood: null, energy: null };
 
@@ -230,9 +226,34 @@ document.getElementById("importFile").onchange = function(){
   fr.readAsText(file);
 };
 
-/* ---------- Timer with alarm + notification ---------- */
+/* ---------- Audio unlock + beep (iOS-safe) ---------- */
+let audioCtx;
+function unlockAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+function playBeep(freq = 880, ms = 350) {
+  if (!audioCtx) return; // must call unlockAudio() from a user gesture first
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.3, now + 0.04);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + ms/1000);
+  o.start(now);
+  o.stop(now + ms/1000 + 0.05);
+}
+
+/* ---------- Timer with alerts ---------- */
 let timerInt;
 function startTimer(mins){
+  // Unlock audio on user gesture (required by iOS)
+  unlockAudio();
+
   const end = Date.now() + mins*60*1000;
   clearInterval(timerInt);
   timerInt = setInterval(()=>{
@@ -240,9 +261,28 @@ function startTimer(mins){
     if (left <= 0){
       clearInterval(timerInt);
       timerDisplay.textContent = "⏰ Time's up!";
-      notify("⏰ Time's up!");
-      navigator.vibrate?.(300);
-      try { new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg").play(); } catch(e){}
+
+      // Sound (double-chime)
+      playBeep(880, 280);
+      setTimeout(()=>playBeep(660, 280), 120);
+
+      // Vibration (Android; iOS will simply ignore)
+      if (navigator.vibrate) navigator.vibrate(300);
+
+      // Try showing a notification via SW (works if PWA installed and permission granted)
+      if ("Notification" in window && Notification.permission === "granted") {
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification("⏰ Focus block finished", {
+              body: "Nice work. Take a short break or start another block.",
+              icon: "icons/icon-192.png",
+              badge: "icons/icon-192.png"
+            }).catch(()=>{});
+          });
+        } else {
+          try { new Notification("⏰ Focus block finished"); } catch {}
+        }
+      }
     } else {
       const m = Math.floor(left/60000), s = Math.floor((left%60000)/1000);
       timerDisplay.textContent = `${m}:${String(s).padStart(2,"0")}`;
@@ -255,20 +295,20 @@ function startCustom(){
 }
 document.getElementById("stopTimer").onclick = ()=>{ clearInterval(timerInt); timerDisplay.textContent=""; };
 
-/* ---------- Notifications ---------- */
-if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
-function notify(msg){
-  if ("Notification" in window && Notification.permission === "granted"){ new Notification(msg); }
+/* ---------- Notifications (request once) ---------- */
+if ("Notification" in window && Notification.permission === "default") {
+  // Safe to call on load; iOS PWAs will show a system prompt
+  Notification.requestPermission().catch(()=>{});
 }
 
 /* ---------- Settings actions ---------- */
-resetStartBtn.onclick = ()=>{
+resetStartBtn?.addEventListener("click", ()=>{
   meta.startDate = TODAY; saveMeta(); render();
   alert("Start date reset to today. Auto week will compute from now.");
-};
-loopToggle.onchange = ()=>{
+});
+loopToggle?.addEventListener("change", ()=>{
   meta.loopWeeks = loopToggle.checked; saveMeta(); render();
-};
+});
 
 /* ---------- Init ---------- */
 render();
