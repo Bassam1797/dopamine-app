@@ -11,18 +11,22 @@
 
 <header>
   <h1>Dopamine 4-Week Plan</h1>
-  <button id="darkToggle">🌙</button>
+  <button id="darkToggle" title="Toggle Dark Mode">🌙</button>
 </header>
 
 <main>
+
+  <!-- Stats -->
   <section id="stats">
     <div>Streak: <span id="streak">0</span></div>
 
-    <div>Day Score: <span id="score">0%</span>
+    <div>
+      Day Score: <span id="score">0%</span>
       <div class="progress"><div id="barToday" class="fill"></div></div>
     </div>
 
-    <div>Week Progress: <span id="weekProg">0%</span>
+    <div>
+      Week Progress: <span id="weekProg">0%</span>
       <div class="progress"><div id="barWeek" class="fill"></div></div>
     </div>
 
@@ -34,6 +38,7 @@
     </svg>
   </section>
 
+  <!-- Date / Week Selector -->
   <section>
     <label for="weekSel">Week:</label>
     <select id="weekSel"></select>
@@ -41,6 +46,7 @@
     <input type="date" id="dateSel">
   </section>
 
+  <!-- Actions & Rules -->
   <section>
     <h2>Actions</h2>
     <div id="actions"></div>
@@ -48,12 +54,14 @@
     <div id="rules"></div>
   </section>
 
+  <!-- Journal -->
   <section>
     <h2>Journal</h2>
     <textarea id="journal" rows="4" placeholder="Write your daily reflection..."></textarea>
     <div><button id="clearJournal">Clear</button></div>
   </section>
 
+  <!-- Mood & Energy -->
   <section>
     <h2>Mood</h2>
     <div id="moodBtns"></div>
@@ -61,6 +69,7 @@
     <div id="energyBtns"></div>
   </section>
 
+  <!-- Timer -->
   <section>
     <h2>Timer</h2>
     <div>
@@ -74,11 +83,13 @@
     <div id="timerDisplay"></div>
   </section>
 
+  <!-- Completion & Badges -->
   <section>
     <button id="markComplete">Mark Day Complete</button>
     <div id="badges"></div>
   </section>
 
+  <!-- Data Export / Import -->
   <section>
     <h2>Data</h2>
     <button onclick="exportJSON()">Export JSON</button>
