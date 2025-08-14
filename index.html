@@ -1,105 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Dopamine Plan</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b7a4b">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <style>
-    :root{--pri:#0b7a4b;--bg:#f7f8f9;--card:#ffffff;--mut:#6b7280}
-    *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
-    body{background:var(--bg);color:#111}
-    header{position:sticky;top:0;background:var(--card);border-bottom:1px solid #e5e7eb;z-index:10}
-    .bar{max-width:900px;margin:auto;padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    select,button,input[type="date"]{padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
-    button.pri{background:var(--pri);color:#fff;border:none}
-    main{max-width:900px;margin:16px auto;padding:0 16px 40px}
-    .grid{display:grid;grid-template-columns:1fr;gap:16px}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
-    h2{margin:.2rem 0 0.6rem 0}
-    .mut{color:var(--mut);font-size:.9rem}
-    .checklist label{display:flex;gap:10px;align-items:flex-start;padding:10px 8px;border-radius:10px;border:1px solid #e5e7eb;margin:.35rem 0;background:#fff}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    textarea{width:100%;min-height:140px;padding:12px;border:1px solid #d1d5db;border-radius:10px}
-    .pill{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid #d1d5db;border-radius:999px;background:#fff}
-    .stats{display:flex;gap:12px;flex-wrap:wrap}
-    .kpi{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;min-width:110px}
-    .small{font-size:.85rem}
-    .timer{font-size:2.2rem;font-weight:700;margin:8px 0}
-    .link{color:var(--pri);cursor:pointer;text-decoration:underline}
-    .footer-space{height:44px}
-    .fab{position:fixed;bottom:16px;right:16px;background:var(--pri);color:#fff;border:none;border-radius:999px;padding:12px 16px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,.12)}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#222222">
+<title>Dopamine Plan</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="bar">
-    <strong>Dopamine Plan</strong>
-    <select id="weekSel">
-      <option value="1">Week 1 — Awareness & Reset</option>
-      <option value="2">Week 2 — Structure & Control</option>
-      <option value="3">Week 3 — Deep Work & Energy</option>
-      <option value="4">Week 4 — Long-Term Balance</option>
-    </select>
-    <input type="date" id="dateSel">
-    <button class="pri" id="todayBtn">Today</button>
-    <span class="mut small" id="saveHint">Autosaved</span>
-    <div style="flex:1"></div>
-    <button id="exportBtn">Export</button>
-    <button id="importBtn">Import</button>
-  </div>
+  <h1>Dopamine Plan</h1>
+  <button id="darkToggle">🌙</button>
 </header>
 
 <main>
-  <div class="stats">
-    <div class="kpi"><div class="mut small">Streak</div><div id="streak" style="font-size:1.4rem;font-weight:700">0</div></div>
-    <div class="kpi"><div class="mut small">Day Score</div><div id="score" style="font-size:1.4rem;font-weight:700">0%</div></div>
-    <div class="kpi"><div class="mut small">Week Progress</div><div id="weekProg" style="font-size:1.4rem;font-weight:700">0%</div></div>
-  </div>
+  <section id="controls">
+    <label>Week:
+      <select id="weekSel">
+        <option value="auto">Auto</option>
+        <option value="1">Week 1</option>
+        <option value="2">Week 2</option>
+        <option value="3">Week 3</option>
+        <option value="4">Week 4</option>
+      </select>
+    </label>
+    <label>Date: <input type="date" id="dateSel"></label>
+    <button id="todayBtn">Today</button>
+  </section>
 
-  <div class="grid">
-    <section class="card">
-      <h2>Daily Actions</h2>
-      <div class="mut" id="actionsDesc"></div>
-      <div id="actions" class="checklist"></div>
-    </section>
+  <section id="stats">
+    <div>Streak: <span id="streak">0</span></div>
+    <div>Day Score: <span id="score">0%</span></div>
+    <div>Week Progress: <span id="weekProg">0%</span></div>
+    <svg height="80" width="80">
+      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    </svg>
+    <svg height="80" width="80">
+      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    </svg>
+  </section>
 
-    <section class="card">
-      <h2>Rules</h2>
-      <div id="rules" class="checklist"></div>
-    </section>
+  <section id="actionsSection">
+    <h2>Actions</h2>
+    <div id="actions"></div>
+    <h2>Rules</h2>
+    <div id="rules"></div>
+  </section>
 
-    <section class="card">
-      <h2>Journal</h2>
-      <div class="mut" id="journalPrompt"></div>
-      <textarea id="journalBox" placeholder="Type a quick reflection…"></textarea>
-      <div class="row" style="margin-top:8px">
-        <span class="pill">Characters: <span id="charCount" style="margin-left:6px">0</span></span>
-        <button id="clearJournal">Clear</button>
-      </div>
-    </section>
+  <section id="moodEnergy">
+    <h3>Mood</h3>
+    <div>
+      <button data-mood="1">😔</button>
+      <button data-mood="2">😐</button>
+      <button data-mood="3">🙂</button>
+      <button data-mood="4">😃</button>
+      <button data-mood="5">🤩</button>
+    </div>
+    <h3>Energy</h3>
+    <div>
+      <button data-energy="1">💤</button>
+      <button data-energy="2">😌</button>
+      <button data-energy="3">🙂</button>
+      <button data-energy="4">⚡</button>
+      <button data-energy="5">🚀</button>
+    </div>
+    <p>Today: <span id="meNow">—</span></p>
+  </section>
 
-    <section class="card">
-      <h2>Quick Stress Tools</h2>
-      <div class="mut">Box breathing, grounding, or a 5-minute reset.</div>
-      <div style="margin-top:8px" class="row">
-        <button id="boxStart" class="pri">Start Box Breathing (4-4-4-4)</button>
-        <button id="groundBtn">5-Senses Grounding</button>
-        <button id="fiveBtn">5-min Reset Timer</button>
-      </div>
-      <div id="coach" class="mut" style="margin-top:10px"></div>
-      <div id="timer" class="timer"></div>
-    </section>
-  </div>
-  <div class="footer-space"></div>
+  <section id="journalSection">
+    <h2>Journal</h2>
+    <p id="journalPrompt"></p>
+    <textarea id="journalBox" rows="5"></textarea>
+    <div><small id="charCount">0</small> chars</div>
+    <button id="clearJournal">Clear</button>
+  </section>
+
+  <section id="focusTimer">
+    <h2>Focus Timer</h2>
+    <button id="start25">25 min</button>
+    <button id="start45">45 min</button>
+    <button id="start60">60 min</button>
+    <input id="startCustom" type="number" min="1" placeholder="Custom min">
+    <button id="stopTimer">Stop</button>
+    <div id="focusStatus"></div>
+    <div id="focusCountdown"></div>
+  </section>
+
+  <section id="completion">
+    <button id="completeBtn">Mark Day Complete</button>
+  </section>
+
+  <section id="badges">
+    <h2>Badges</h2>
+    <div id="badgesList"></div>
+  </section>
+
+  <section id="exportImport">
+    <h2>Data</h2>
+    <button id="exportBtn">Export JSON</button>
+    <button id="exportCsvBtn">Export CSV</button>
+    <input type="file" id="filePicker" hidden>
+    <button id="importBtn">Import JSON</button>
+  </section>
 </main>
 
-<button class="fab" id="completeBtn">Mark Day Complete</button>
-
-<input type="file" id="filePicker" accept="application/json" style="display:none" />
+<footer>
+  <p>Offline-first. All data stays on this device.</p>
+</footer>
 
 <script src="app.js"></script>
 </body>
