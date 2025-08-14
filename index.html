@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dopamine 4-Week Plan</title>
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css" />
+<link rel="manifest" href="manifest.json" />
 </head>
 <body>
 
@@ -30,20 +30,22 @@
       <div class="progress"><div id="barWeek" class="fill"></div></div>
     </div>
 
-    <svg height="80" width="80">
-      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    <svg height="80" width="80" aria-label="Today ring">
+      <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
+      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
     </svg>
-    <svg height="80" width="80">
-      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    <svg height="80" width="80" aria-label="Week ring">
+      <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
+      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
     </svg>
   </section>
 
   <!-- Date / Week Selector -->
-  <section>
+  <section id="controls">
     <label for="weekSel">Week:</label>
     <select id="weekSel"></select>
     <label for="dateSel">Date:</label>
-    <input type="date" id="dateSel">
+    <input type="date" id="dateSel" />
   </section>
 
   <!-- Actions & Rules -->
@@ -76,7 +78,7 @@
       <button onclick="startTimer(25)">25m</button>
       <button onclick="startTimer(45)">45m</button>
       <button onclick="startTimer(60)">60m</button>
-      <input type="number" id="customMins" placeholder="Custom (min)" style="width:100px">
+      <input type="number" id="customMins" placeholder="Custom (min)" style="width:100px" />
       <button onclick="startCustom()">Start</button>
       <button id="stopTimer">Stop</button>
     </div>
@@ -94,7 +96,25 @@
     <h2>Data</h2>
     <button onclick="exportJSON()">Export JSON</button>
     <button onclick="exportCSV()">Export CSV</button>
-    <input type="file" id="importFile" accept=".json">
+    <input type="file" id="importFile" accept=".json" />
+  </section>
+
+  <!-- Settings -->
+  <section id="settings">
+    <h2>Settings</h2>
+    <div class="settings-row">
+      <div>
+        <div><strong>Start date:</strong> <span id="startDateLabel">—</span></div>
+        <div><small class="mut">Auto week is computed as floor(days since start ÷ 7) + 1.</small></div>
+      </div>
+      <div class="settings-actions">
+        <button id="resetStartBtn" title="Reset start date to today">Reset to Today</button>
+      </div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="loopToggle" />
+      Loop weeks after Week 4 (1→4→1…)
+    </label>
   </section>
 
 </main>
