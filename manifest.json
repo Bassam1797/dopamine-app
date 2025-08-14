@@ -1,10 +1,11 @@
 {
-  "name": "Dopamine Plan",
-  "short_name": "Dopamine",
+  "name": "Dopamine 4-Week Plan",
+  "short_name": "Dopamine Plan",
+  "start_url": "./index.html",
   "display": "standalone",
-  "start_url": ".",
-  "theme_color": "#0b7a4b",
-  "background_color": "#f7f8f9",
+  "background_color": "#f5f5f5",
+  "theme_color": "#4cafef",
+  "description": "Offline-first 4-week focus & habit tracker to manage dopamine balance, build routines, and track progress. Includes streaks, badges, mood logs, timer, export/import, and dark mode.",
   "icons": [
     {
       "src": "icons/icon-192.png",
