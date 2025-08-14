@@ -1,10 +1,12 @@
 {
   "name": "Dopamine 4-Week Plan",
   "short_name": "Dopamine Plan",
-  "start_url": "./index.html",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#4cafef",
+  "orientation": "portrait",
   "description": "Offline-first focus & habit tracker with tasks, scheduled reminders, timers, streaks, and a 4-week plan.",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
