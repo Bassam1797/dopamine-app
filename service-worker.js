@@ -1,17 +1,38 @@
-const CACHE = "dopamine-cache-v1";
-const ASSETS = [
+const CACHE_NAME = "dopamine-cache-v2";
+const FILES_TO_CACHE = [
   "./",
   "./index.html",
+  "./style.css",
   "./app.js",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
-self.addEventListener("install", e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
+  );
+  self.skipWaiting();
 });
-self.addEventListener("fetch", e=>{
-  e.respondWith(
-    caches.match(e.request).then(r=> r || fetch(e.request))
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keyList) =>
+      Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => response || fetch(event.request))
   );
 });
