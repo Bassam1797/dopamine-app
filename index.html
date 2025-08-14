@@ -3,144 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#222222">
-<title>Dopamine Plan</title>
-<link rel="manifest" href="manifest.json">
+<title>Dopamine 4-Week Plan</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
+
 <header>
-  <h1>Dopamine Plan</h1>
-  <button id="darkToggle" title="Toggle dark mode">🌙</button>
+  <h1>Dopamine 4-Week Plan</h1>
+  <button id="darkToggle">🌙</button>
 </header>
 
 <main>
-  <!-- Controls -->
-  <section id="controls">
-    <label>Week:
-      <select id="weekSel">
-        <option value="auto">Auto</option>
-        <option value="1">Week 1</option>
-        <option value="2">Week 2</option>
-        <option value="3">Week 3</option>
-        <option value="4">Week 4</option>
-      </select>
-    </label>
-    <label>Date: <input type="date" id="dateSel"></label>
-    <button id="todayBtn">Today</button>
-  </section>
-
-  <!-- Stats -->
   <section id="stats">
     <div>Streak: <span id="streak">0</span></div>
 
     <div>Day Score: <span id="score">0%</span>
-      <div class="progress" aria-label="Today progress">
-        <div id="barToday" class="fill"></div>
-      </div>
+      <div class="progress"><div id="barToday" class="fill"></div></div>
     </div>
 
     <div>Week Progress: <span id="weekProg">0%</span>
-      <div class="progress" aria-label="Week progress">
-        <div id="barWeek" class="fill"></div>
-      </div>
+      <div class="progress"><div id="barWeek" class="fill"></div></div>
     </div>
 
-    <div class="rings">
-      <svg height="80" width="80" aria-label="Today ring">
-        <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-        <circle id="ringDaily" cx="40" cy="40" r="35" stroke="#16a34a" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
-      </svg>
-      <svg height="80" width="80" aria-label="Week ring">
-        <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-        <circle id="ringWeek" cx="40" cy="40" r="35" stroke="#2563eb" stroke-width="6" fill="none" stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
-      </svg>
-    </div>
-    <div>Today Mood/Energy: <span id="meNow">—</span></div>
+    <svg height="80" width="80">
+      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    </svg>
+    <svg height="80" width="80">
+      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none" stroke-dasharray="0,100"/>
+    </svg>
   </section>
 
-  <!-- Actions & Rules -->
-  <section id="actionsSection">
-    <h2>Daily Actions</h2>
-    <div class="mut" id="actionsDesc"></div>
-    <div id="actions"></div>
+  <section>
+    <label for="weekSel">Week:</label>
+    <select id="weekSel"></select>
+    <label for="dateSel">Date:</label>
+    <input type="date" id="dateSel">
+  </section>
 
+  <section>
+    <h2>Actions</h2>
+    <div id="actions"></div>
     <h2>Rules</h2>
     <div id="rules"></div>
   </section>
 
-  <!-- Mood / Energy -->
-  <section id="moodEnergy">
-    <h2>Mood / Energy</h2>
-    <div>
-      <strong>Mood:</strong>
-      <button data-mood="1">😕</button>
-      <button data-mood="2">😐</button>
-      <button data-mood="3">🙂</button>
-      <button data-mood="4">😄</button>
-      <button data-mood="5">🤩</button>
-    </div>
-    <div>
-      <strong>Energy:</strong>
-      <button data-energy="1">⚡1</button>
-      <button data-energy="2">⚡2</button>
-      <button data-energy="3">⚡3</button>
-      <button data-energy="4">⚡4</button>
-      <button data-energy="5">⚡5</button>
-    </div>
-  </section>
-
-  <!-- Journal -->
-  <section id="journalSection">
+  <section>
     <h2>Journal</h2>
-    <p id="journalPrompt" class="mut"></p>
-    <textarea id="journalBox" rows="6" placeholder="Quick reflection…"></textarea>
-    <div><small id="charCount">0</small> chars</div>
-    <button id="clearJournal">Clear</button>
+    <textarea id="journal" rows="4" placeholder="Write your daily reflection..."></textarea>
+    <div><button id="clearJournal">Clear</button></div>
   </section>
 
-  <!-- Focus timer -->
-  <section id="focusTimer">
-    <h2>Focus Timer</h2>
+  <section>
+    <h2>Mood</h2>
+    <div id="moodBtns"></div>
+    <h2>Energy</h2>
+    <div id="energyBtns"></div>
+  </section>
+
+  <section>
+    <h2>Timer</h2>
     <div>
-      <button id="start25">25 min</button>
-      <button id="start45">45 min</button>
-      <button id="start60">60 min</button>
-    </div>
-    <div>
-      <input id="customMin" type="number" min="1" placeholder="Custom min">
-      <button id="startCustomBtn">Start</button>
+      <button onclick="startTimer(25)">25m</button>
+      <button onclick="startTimer(45)">45m</button>
+      <button onclick="startTimer(60)">60m</button>
+      <input type="number" id="customMins" placeholder="Custom (min)" style="width:100px">
+      <button onclick="startCustom()">Start</button>
       <button id="stopTimer">Stop</button>
     </div>
-    <div id="focusStatus" class="mut"></div>
-    <div id="focusCountdown" class="countdown"></div>
+    <div id="timerDisplay"></div>
   </section>
 
-  <!-- Complete -->
-  <section id="completion">
-    <button id="completeBtn" class="btn btn-success">Mark Day Complete</button>
+  <section>
+    <button id="markComplete">Mark Day Complete</button>
+    <div id="badges"></div>
   </section>
 
-  <!-- Badges -->
-  <section id="badges">
-    <h2>Badges</h2>
-    <div id="badgesList"></div>
-  </section>
-
-  <!-- Data -->
-  <section id="exportImport">
+  <section>
     <h2>Data</h2>
-    <button id="exportBtn">Export JSON</button>
-    <button id="exportCsvBtn">Export CSV</button>
-    <input type="file" id="filePicker" hidden>
-    <button id="importBtn">Import JSON</button>
+    <button onclick="exportJSON()">Export JSON</button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <input type="file" id="importFile" accept=".json">
   </section>
+
 </main>
 
 <footer>
-  <p>Offline-first. All data stays on this device.</p>
+  <small>Offline-first PWA • All data stays on your device</small>
 </footer>
 
-<script src="app.js"></script>
+<script src="app.js" defer></script>
 </body>
 </html>
