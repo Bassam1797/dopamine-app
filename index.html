@@ -3,196 +3,129 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-<!-- Basic Info -->
-<title>Dopamine 4-Week Plan</title>
-<meta name="description" content="Offline-first focus & habit tracker with tasks, scheduled reminders, timers, streaks, and a 4-week plan.">
-
-<!-- Theme Colors -->
+<title>FocusTasks PWA</title>
+<meta name="description" content="Offline-first focus planner with Today timers, Upcoming tasks, planner blocks, notes, heatmap, backups, and WebDAV sync.">
 <meta name="theme-color" content="#4cafef">
 <meta name="background-color" content="#f5f5f5">
-
-<!-- iOS PWA Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Dopamine Plan">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-
-<!-- Manifest & Styles -->
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css" />
-
-<!-- Fallback icons for browsers -->
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 </head>
 <body>
-
 <header>
-  <h1>Dopamine 4-Week Plan</h1>
+  <div class="brand">
+    <img src="icons/focustasks-logo.svg" alt="FocusTasks" class="brand-logo" />
+  </div>
   <button id="darkToggle" title="Toggle Dark Mode">🌙</button>
 </header>
 
 <main>
-
-  <!-- Stats -->
   <section id="stats">
     <div>Streak: <span id="streak">0</span></div>
-
+    <div>Points: <span id="points">0</span></div>
     <div>
       Day Score: <span id="score">0%</span>
       <div class="progress"><div id="barToday" class="fill"></div></div>
     </div>
-
     <div>
       Week Progress: <span id="weekProg">0%</span>
       <div class="progress"><div id="barWeek" class="fill"></div></div>
     </div>
-
-    <svg height="80" width="80" aria-label="Today ring">
-      <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-      <circle id="ringDaily" cx="40" cy="40" r="35" stroke="green" stroke-width="6" fill="none"
-              stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
-    </svg>
-    <svg height="80" width="80" aria-label="Week ring">
-      <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"/>
-      <circle id="ringWeek" cx="40" cy="40" r="35" stroke="blue" stroke-width="6" fill="none"
-              stroke-dasharray="0,100" transform="rotate(-90 40 40)"/>
-    </svg>
+    <div id="heatmap" class="heatmap"></div>
   </section>
 
-  <!-- Date / Week Selector -->
   <section id="controls">
-    <label for="weekSel">Week:</label>
-    <select id="weekSel"></select>
-    <label for="dateSel">Date:</label>
-    <input type="date" id="dateSel" />
+    <label for="weekSel">Week:</label><select id="weekSel"></select>
+    <label for="dateSel">Date:</label><input type="date" id="dateSel" />
+    <button id="notifyBtn">Enable Notifications</button>
   </section>
 
-  <!-- Actions & Rules -->
-  <section>
-    <h2>Actions</h2>
-    <div id="actions"></div>
-    <h2>Rules</h2>
-    <div id="rules"></div>
-  </section>
-
-  <!-- Journal -->
-  <section>
-    <h2>Journal</h2>
-    <textarea id="journal" rows="4" placeholder="Write your daily reflection..."></textarea>
-    <div><button id="clearJournal">Clear</button></div>
-  </section>
-
-  <!-- Mood & Energy -->
-  <section>
-    <h2>Mood</h2>
-    <div id="moodBtns"></div>
-    <h2>Energy</h2>
-    <div id="energyBtns"></div>
-  </section>
-
-  <!-- Tasks (dynamic) -->
   <section id="tasks">
-    <h2>Tasks</h2>
-    <div class="mut">Create tasks for today. Each task has its own timer.</div>
+    <h2>Today</h2>
+    <div class="mut">Actionable tasks for today, each with its own timer and pre-alerts.</div>
     <div id="tasksList"></div>
-    <div class="task-actions">
-      <button id="addTaskBtn">+ Add Task</button>
-    </div>
+    <button id="addTaskBtn">+ Add Task</button>
   </section>
 
-  <!-- Scheduled Tasks (auto-move to Today when due) -->
   <section id="scheduled">
-    <h2>Scheduled Tasks</h2>
-    <div class="mut">Tasks here will notify you and move into <em>Today</em> when their time arrives.</div>
-
+    <h2>Upcoming</h2>
     <form id="schedForm" autocomplete="off">
       <input type="text" id="schedText" placeholder="Task title" />
       <input type="date" id="schedDate" />
       <input type="time" id="schedTime" />
       <input type="number" id="schedMin" min="1" value="25" title="Minutes" />
       <select id="schedRepeat" title="Repeat">
-        <option value="none">No repeat</option>
-        <option value="daily">Daily</option>
-        <option value="weekdays">Weekdays</option>
-        <option value="weekly">Weekly</option>
+        <option value="none">No repeat</option><option value="daily">Daily</option>
+        <option value="weekdays">Weekdays</option><option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option><option value="every3">Every 3 days</option>
       </select>
-      <label class="checkbox-inline">
-        <input type="checkbox" id="schedAutoStart" checked /> Auto-start
-      </label>
+      <label class="checkbox-inline"><input type="checkbox" id="schedAutoStart" checked /> Autostart</label>
       <button type="submit">Add</button>
     </form>
-
+    <div>
+      <button id="exportIcsBtn">Export to Calendar (.ics)</button>
+    </div>
     <div id="scheduledList"></div>
   </section>
 
-  <!-- Weekly Planner (next 7 days) -->
   <section id="planner">
-    <h2>Weekly Planner</h2>
-    <div class="mut">Upcoming scheduled tasks for the next 7 days.</div>
+    <h2>Planner</h2>
     <div id="plannerGrid" class="planner-grid"></div>
   </section>
 
-  <!-- Timer -->
-  <section>
-    <h2>Timer</h2>
-    <div>
-      <button onclick="startTimer(25)">25m</button>
-      <button onclick="startTimer(45)">45m</button>
-      <button onclick="startTimer(60)">60m</button>
-      <input type="number" id="customMins" placeholder="Custom (min)" style="width:100px" />
-      <button onclick="startCustom()">Start</button>
-      <button id="stopTimer">Stop</button>
+  <section id="notesSec">
+    <h2>Notes</h2>
+    <div class="notes-top">
+      <input id="noteFolder" placeholder="Folder" />
+      <input id="noteTitle" placeholder="Note title" />
+      <button id="newNoteBtn">New Note</button>
+      <button id="toggleSprintBtn">Writing Sprint</button>
     </div>
+    <div class="notes-wrap">
+      <div id="notesList"></div>
+      <textarea id="noteBody" rows="8" placeholder="Type / for quick commands"></textarea>
+    </div>
+  </section>
+
+  <section>
+    <h2>Break & Play</h2>
+    <button class="breakBtn" data-min="2">2m break</button>
+    <button class="breakBtn" data-min="3">3m break</button>
+    <button class="breakBtn" data-min="5">5m break</button>
     <div id="timerDisplay"></div>
   </section>
 
-  <!-- Completion & Badges -->
   <section>
-    <button id="markComplete">Mark Day Complete</button>
-    <div id="badges"></div>
-  </section>
-
-  <!-- Data Export / Import -->
-  <section>
-    <h2>Data</h2>
+    <h2>Data & Sync</h2>
     <button onclick="exportJSON()">Export JSON</button>
     <button onclick="exportCSV()">Export CSV</button>
-    <input type="file" id="importFile" accept=".json" />
+    <button id="exportEncryptedBtn">Export Encrypted Backup (.ftb)</button>
+    <input type="file" id="importFile" accept=".json,.ftb" />
+    <div class="sync-grid">
+      <input id="davUrl" placeholder="WebDAV URL" />
+      <input id="davUser" placeholder="Username" />
+      <input id="davPass" placeholder="Password" type="password" />
+      <button id="davTestBtn">Test</button>
+      <button id="davSyncBtn">Sync Now</button>
+    </div>
   </section>
 
-  <!-- Settings -->
   <section id="settings">
     <h2>Settings</h2>
-    <div class="settings-row">
-      <div>
-        <div><strong>Start date:</strong> <span id="startDateLabel">—</span></div>
-        <div><small class="mut">Auto week = floor(days since start ÷ 7) + 1.</small></div>
-      </div>
-      <div class="settings-actions">
-        <button id="resetStartBtn" title="Reset start date to today">Reset to Today</button>
-      </div>
-    </div>
-    <label class="toggle">
-      <input type="checkbox" id="loopToggle" />
-      Loop weeks after Week 4 (1→4→1…)
-    </label>
+    <label class="toggle"><input type="checkbox" id="autostartChainToggle" /> Autostart & chain</label>
+    <label class="toggle"><input type="checkbox" id="quickCaptureToggle" /> Quick Capture</label>
+    <label class="toggle"><input type="checkbox" id="zenToggle" /> Zen Mode</label>
+    <label class="toggle"><input type="checkbox" id="heatmapToggle" checked /> Weekly Heatmap</label>
+    <label class="toggle"><input type="checkbox" id="hapticsToggle" /> Haptics</label>
+    <label class="toggle"><input type="checkbox" id="loopToggle" /> Loop weeks after Week 4</label>
+    <button id="resetStartBtn">Reset start date to Today</button>
+    <div><strong>Start date:</strong> <span id="startDateLabel">—</span></div>
   </section>
-
 </main>
 
-<footer>
-  <small>Offline-first PWA • All data stays on your device</small>
-</footer>
-
+<button id="quickCaptureBtn" title="Quick Capture">＋</button>
+<footer><small>Offline-first PWA • Local-first by default</small></footer>
 <script src="app.js" defer></script>
-
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(console.error);
-  }
-</script>
-
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(console.error);</script>
 </body>
 </html>

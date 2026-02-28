@@ -29,17 +29,23 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return; // don't cache POST/PUT, etc.
 
+  const url = new URL(req.url);
+  // Cache API only supports http/https requests (not chrome-extension:, data:, etc.)
+  if (!["http:", "https:"].includes(url.protocol)) return;
+
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
-      return fetch(req).then((resp) => {
-        // Optionally cache successful GET responses
-        if (resp && resp.status === 200 && resp.type === "basic") {
-          const copy = resp.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, copy));
-        }
-        return resp;
-      }).catch(() => cached);
+      return fetch(req)
+        .then((resp) => {
+          // Optionally cache successful same-origin GET responses
+          if (resp && resp.status === 200 && resp.type === "basic") {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(req, copy));
+          }
+          return resp;
+        })
+        .catch(() => cached);
     })
   );
 });

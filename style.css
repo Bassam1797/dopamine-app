@@ -1,137 +1,54 @@
-/* === Base Styles === */
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  margin: 0;
-  background: #f5f5f5;
-  color: #222;
-}
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #f5f5f5; color: #222; }
 .mut { color: #6b7280; }
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #4cafef;
-  color: white;
-  padding: 10px 15px;
-}
-h1 { margin: 0; font-size: 1.3rem; }
-
-main { padding: 10px; max-width: 900px; margin: auto; }
-h2, h3 { margin-top: 20px; }
-
-section {
-  margin-bottom: 20px;
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
-label { display: inline-block; margin: 5px 10px 5px 0; }
-input[type="checkbox"] { margin-right: 6px; }
-textarea {
-  width: 100%; font-size: 1rem; padding: 8px;
-  border-radius: 8px; border: 1px solid #e5e7eb;
-}
-
-button {
-  padding: 8px 12px;
-  margin: 5px 4px;
-  border: none;
-  border-radius: 8px;
-  background: #4cafef;
-  color: white;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background .2s ease, transform .05s ease;
-}
-button:hover { background: #3996d6; }
-button:active { transform: scale(0.98); }
-
-svg { margin: 5px; }
-
-/* Progress bars */
+header { display:flex; justify-content:space-between; align-items:center; background:#4cafef; color:#fff; padding:10px 15px; position:sticky; top:0; z-index:5; }
+.brand { display:flex; align-items:center; }
+.brand-logo { height:56px; width:auto; display:block; }
+main { padding:10px; max-width:1000px; margin:auto; }
+section { margin-bottom:16px; background:#fff; padding:12px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); }
+button, input, select, textarea { border-radius:8px; border:1px solid #d1d5db; padding:8px; font-size:.92rem; }
+button { border:none; background:#4cafef; color:#fff; cursor:pointer; }
+button:hover { background:#3996d6; }
 .progress { width:100%; height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:6px; }
-.fill { width:0%; height:100%; background:#49b785; transition:width .35s ease; }
+.fill { width:0%; height:100%; background:#49b785; transition:width .25s; }
 
-/* Settings */
-#settings .settings-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-#settings .settings-actions { display:flex; gap:8px; }
-.toggle { display:flex; align-items:center; gap:8px; }
-
-/* Tasks (dynamic) */
-.task-row {
-  display: grid;
-  grid-template-columns: 24px 1fr 78px 70px 70px 1fr;
-  /* [checkbox][text][mins][start][stop][countdown] */
-  gap: 8px; align-items:center; margin: 8px 0;
-}
-.task-row input[type="text"],
-.task-row input[type="number"],
-.sched-row input[type="text"],
-.sched-row input[type="date"],
-.sched-row input[type="time"],
-.sched-row input[type="number"],
-#schedForm input, #schedForm select {
-  width:100%; padding:8px; border:1px solid #e5e7eb; border-radius:8px;
-}
-.task-countdown { font-variant-numeric: tabular-nums; text-align: right; }
-
-/* Scheduled Tasks */
-#schedForm {
-  display: grid;
-  grid-template-columns: 1fr 120px 110px 90px 130px auto 90px; /* title, date, time, mins, repeat, autostart, add */
-  gap: 8px; align-items: center; margin: 10px 0 6px;
-}
+.task-row { display:grid; grid-template-columns:24px 1fr 80px 65px 65px 85px 1fr; gap:8px; align-items:center; margin:8px 0; }
+.task-countdown { text-align:right; font-variant-numeric: tabular-nums; }
+#schedForm { display:grid; grid-template-columns:1fr 130px 110px 90px 130px auto 90px; gap:8px; align-items:center; margin-bottom:8px; }
+.sched-row { display:grid; grid-template-columns:1fr 130px 110px 90px 65px 65px 65px 92px 60px; gap:6px; align-items:center; margin:6px 0; }
 .checkbox-inline { display:flex; align-items:center; gap:6px; }
+.planner-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+.planner-day { background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:8px; }
+.plan-item { font-size:.9rem; margin:4px 0; }
 
-.sched-row {
-  display: grid;
-  grid-template-columns: 1fr 160px 110px 90px 70px; /* title, date, time, mins, del */
-  gap: 8px; align-items: center; margin: 8px 0;
-}
+.notes-top { display:grid; grid-template-columns:120px 1fr auto auto; gap:8px; margin-bottom:8px; }
+.notes-wrap { display:grid; grid-template-columns:260px 1fr; gap:10px; }
+#notesList { display:flex; flex-direction:column; gap:6px; max-height:280px; overflow:auto; }
+.note-item { text-align:left; }
+.note-item.active { outline:2px solid #4cafef; }
 
-/* Weekly Planner */
-.planner-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-.planner-day {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 8px;
-}
-.planner-day h4 { margin: 4px 0 6px; font-size: .95rem; }
-.plan-item { font-size: .9rem; margin: 4px 0; }
-.plan-item small { color:#6b7280; }
+.heatmap { display:grid; grid-template-columns:repeat(21, 1fr); gap:4px; margin-top:8px; }
+.hm-cell { background:#1f9d67; height:14px; border-radius:4px; }
 
-/* Footer */
-footer { font-size: .8rem; text-align:center; padding: 10px; background: #ddd; border-top: 1px solid #ccc; }
+.toggle { display:flex; align-items:center; gap:8px; margin:4px 0; }
+#quickCaptureBtn { position:fixed; right:16px; bottom:16px; width:48px; height:48px; border-radius:999px; font-size:26px; border:none; box-shadow:0 6px 18px rgba(0,0,0,.25); }
+footer { text-align:center; padding:10px; }
+.sync-grid { display:grid; grid-template-columns:1fr 140px 140px 100px 100px; gap:8px; margin-top:8px; }
 
-/* Dark Mode */
 body.dark { background:#121212; color:#eaeaea; }
 body.dark header { background:#222; }
 body.dark section { background:#1e1e1e; color:#eaeaea; }
-body.dark .progress { background:#263040; }
-body.dark .fill { background:#34d399; }
-body.dark footer { background:#222; }
-body.dark button { background:#4cafef; }
-body.dark button:hover { background:#3996d6; }
+body.dark input, body.dark select, body.dark textarea { background:#131313; color:#fff; border-color:#2a2a2a; }
 body.dark .planner-day { background:#171a1f; border-color:#2a2f39; }
-body.dark #schedForm input, 
-body.dark #schedForm select,
-body.dark .task-row input { background:#131313; color:#eaeaea; border-color:#2a2a2a; }
+body.dark .progress { background:#263040; }
 
-/* Responsive */
-@media (max-width: 980px) {
-  .planner-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (max-width: 680px) {
-  #schedForm { grid-template-columns: 1fr 120px 110px 90px 130px 90px; }
-  .planner-grid { grid-template-columns: repeat(2, 1fr); }
-  .task-row { grid-template-columns: 24px 1fr 70px 62px 62px 1fr; }
+body.zen header, body.zen footer, body.zen #stats, body.zen #settings { display:none; }
+body.sprint #notesList, body.sprint #noteFolder, body.sprint #noteTitle, body.sprint #newNoteBtn { display:none; }
+
+@media (max-width: 900px){
+  .brand-logo { height:44px; }
+  .planner-grid { grid-template-columns:repeat(3,1fr); }
+  #schedForm { grid-template-columns:1fr 120px 100px 80px 120px 90px; }
+  .sched-row { grid-template-columns:1fr 120px 100px 80px repeat(5,60px); }
+  .notes-wrap { grid-template-columns:1fr; }
+  .sync-grid { grid-template-columns:1fr 1fr; }
 }
